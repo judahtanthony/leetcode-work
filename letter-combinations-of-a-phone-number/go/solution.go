@@ -65,8 +65,8 @@ func lc(buff []string, add byte) []string {
 	return res
 }
 
-// Reduc the number of reallocations
-func letterCombinations(digits string) []string {
+// Reduce the number of reallocations
+func letterCombinationsReduced(digits string) []string {
 	n := len(digits)
 	if n == 0 {
 		return []string{}
@@ -83,4 +83,60 @@ func letterCombinations(digits string) []string {
 	}
 
 	return results
+}
+
+func calcKey(digits string) ([][]byte, int) {
+	n := len(digits)
+	ret := make([][]byte, 0, n)
+	m := 1
+
+	for i := 0; i < n; i++ {
+		chars := letters(digits[i])
+		nn := len(chars)
+		if nn > 0 {
+			m *= nn
+			ret = append(ret, []byte(chars))
+		}
+	}
+
+	if len(ret) == 0 {
+		m = 0
+	}
+
+	return ret, m
+}
+
+// Fully tabularized
+func letterCombinations(digits string) []string {
+	n := len(digits)
+	if n == 0 {
+		return []string{}
+	}
+	key, m := calcKey(digits)
+	n = len(key)
+
+	// Strings are immutable, so we need to build our
+	// table as a grid of bytes.
+	tab := make([][]byte, m)
+	stepm := m
+	// For each digit...
+	for col := 0; col < n; col++ {
+		chars := key[col]
+		charsn := len(key[col])
+		stepm /= charsn
+		// ...assign a character per permutation.
+		for row := 0; row < m; row++ {
+			if col == 0 {
+				tab[row] = make([]byte, n)
+			}
+			tab[row][col] = chars[(row/stepm)%charsn]
+		}
+	}
+	// Now we need to turn that grid back into a list of strings.
+	ret := make([]string, m)
+	for i, bytes := range tab {
+		ret[i] = string(bytes)
+	}
+
+	return ret
 }
